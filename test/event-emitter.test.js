@@ -8,4 +8,12 @@ describe('event emitter class', () => {
         assert.deepEqual(ee.events, {});
     }); 
 
+    it('adds a new event type to the hash, registers handler fn', () => {
+        let ee = new EventEmitter();
+        let callback = function() {}
+        ee.addListener('TEST', callback);
+        assert.isOk(ee.events['TEST'])
+        assert.deepEqual(ee.events['TEST'], [callback]);
+    })
+
 });
