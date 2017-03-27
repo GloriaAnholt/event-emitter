@@ -25,4 +25,18 @@ describe('event emitter class', () => {
         assert.isFalse(response);
     });
 
+    it('returns the function to unsubscribe', () => {
+        let othercb = function() {};
+        // make sure there's only one cb in the TEST event array
+        assert.equal(ee.events['TEST'].length, 1);
+        // add a new listener and capture it's unsubscribe function
+        const removeMe = ee.addListener('TEST', othercb);
+        // make sure the cb is in the array 
+        assert.equal(ee.events['TEST'].length, 2);
+        removeMe();
+        // make sure this cb isn't in there anymore
+        assert.equal(ee.events['TEST'].length, 1);
+        assert.notInclude(ee.events['TEST'], othercb);
+    });
+
 });
