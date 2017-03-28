@@ -50,4 +50,15 @@ describe('event emitter class', () => {
         assert.deepEqual(EventEmitter, returnedEE);
     });
 
+    it('removes the correct listener on remove', () => {
+        let localcb = function() { return 'different function' };
+        ee.addListener('removeOne', callback);
+        ee.addListener('removeOne', localcb);
+        assert.equal(ee.events['removeOne'].length, 2);
+        ee.removeListener('removeOne', localcb);
+        assert.equal(ee.events['removeOne'].length, 1);
+        // only the cb should be left in the array
+        assert.deepEqual(ee.events['removeOne'], [callback]);
+    });
+
 });
