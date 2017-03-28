@@ -19,7 +19,18 @@ class EventEmitter {
                 })
             }
         } 
+        // error - didn't pass a fn as a cb, add failed
         else return false;
+    }
+
+    removeAllListeners(eventName) {
+        if ( this.events[eventName] ) {
+            this.events[eventName].length = 0;
+            // Like node, returns a reference to itself to allow for chaining calls
+            return EventEmitter;
+        }
+        // eventName wasn't registered
+        else return false
     }
     
 }

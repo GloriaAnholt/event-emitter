@@ -39,4 +39,15 @@ describe('event emitter class', () => {
         assert.notInclude(ee.events['TEST'], othercb);
     });
 
+    it('removes all listeners for a given event type', () => {
+        ee.addListener('REMOVEME', callback);
+        ee.addListener('REMOVEME', callback);
+        ee.addListener('REMOVEME', callback);
+        assert.equal(ee.events['REMOVEME'].length, 3);
+        let returnedEE = ee.removeAllListeners('REMOVEME');
+        assert.equal(ee.events['REMOVEME'].length, 0);
+        // removeAll returns a ref to the EE class itself
+        assert.deepEqual(EventEmitter, returnedEE);
+    });
+
 });
