@@ -26,7 +26,7 @@ class EventEmitter {
         if ( typeof cb === 'function' ) {
             const wrapper = (...args) => {
                 this.removeListener(eventName, wrapper);
-                cb(...args);
+                cb.call(this, ...args);
             }
             this.addListener(eventName, wrapper);
         }
@@ -37,7 +37,7 @@ class EventEmitter {
     emit(eventName, ...args) {
         if ( this.events[eventName] ) {
             this.events[eventName].map(fn => {
-                fn(...args);
+                fn.call(this, ...args);
             })
         }
         // error: eventName wasn't registered
