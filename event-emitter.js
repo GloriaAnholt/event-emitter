@@ -19,7 +19,19 @@ class EventEmitter {
                 })
             }
         } 
-        // error - didn't pass a fn as a cb, add failed
+        // error: didn't pass a fn as a handler, add failed
+        else return false;
+    }
+
+    removeListener(eventName, cb) {
+        if ( this.events[eventName] ) {
+            let index = this.events[eventName].indexOf(cb);
+            if (index > -1) {
+                this.events[eventName].splice(index, 1);
+                return true;
+            }
+        }
+        // error: couldn't find event or registered handler
         else return false;
     }
 
@@ -29,7 +41,7 @@ class EventEmitter {
             // Like node, returns a reference to itself to allow for chaining calls
             return EventEmitter;
         }
-        // eventName wasn't registered
+        // error: eventName wasn't registered
         else return false
     }
     
