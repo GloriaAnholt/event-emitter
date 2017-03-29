@@ -2,18 +2,18 @@
 
 class EventEmitter {
     constructor() {
-        this.events = {};
+        this._events = {};
     }
 
     addListener(eventName, cb) {
-        if ( !this.events[eventName] ) {
-            this.events[eventName] = [];
+        if ( !this._events[eventName] ) {
+            this._events[eventName] = [];
         }
         if ( typeof cb === 'function' ) {
-            this.events[eventName].push(cb);
+            this._events[eventName].push(cb);
             // return them their unsubscribe function
             return () => { 
-                this.events[eventName] = this.events[eventName].filter(fn => {
+                this._events[eventName] = this._events[eventName].filter(fn => {
                 if (fn !== cb) return fn
                 })
             }
@@ -35,8 +35,8 @@ class EventEmitter {
     }
     
     emit(eventName, ...args) {
-        if ( this.events[eventName] ) {
-            this.events[eventName].map(fn => {
+        if ( this._events[eventName] ) {
+            this._events[eventName].map(fn => {
                 fn.call(this, ...args);
             })
         }
@@ -45,10 +45,10 @@ class EventEmitter {
     }
 
     removeListener(eventName, cb) {
-        if ( this.events[eventName] ) {
-            let index = this.events[eventName].indexOf(cb);
+        if ( this._events[eventName] ) {
+            let index = this._events[eventName].indexOf(cb);
             if (index > -1) {
-                this.events[eventName].splice(index, 1);
+                this._events[eventName].splice(index, 1);
                 return true;
             }
         }
@@ -57,8 +57,8 @@ class EventEmitter {
     }
 
     removeAllListeners(eventName) {
-        if ( this.events[eventName] ) {
-            this.events[eventName].length = 0;
+        if ( this._events[eventName] ) {
+            this._events[eventName].length = 0;
             // Like node, returns a reference to itself to allow for chaining calls
             return EventEmitter;
         }
