@@ -7,7 +7,7 @@ describe('event emitter class', () => {
     let ee = new EventEmitter();
 
     // define a callback to register with events
-    let callback = function() {};
+    const callback = () => {};
 
     it('creates an empty state object', () => {
         assert.deepEqual(ee.events, {});
@@ -26,7 +26,7 @@ describe('event emitter class', () => {
     });
 
     it('returns the function to unsubscribe', () => {
-        let othercb = function() {};
+        const othercb = () => {};
         // make sure there's only one cb in the TEST event array
         assert.equal(ee.events['TEST'].length, 1);
         // add a new listener and capture it's unsubscribe function
@@ -52,7 +52,7 @@ describe('event emitter class', () => {
     });
 
     it('removes the first correct listener on remove', () => {
-        let localcb = function() { return 'different function' };
+        const localcb = () => { 'different function' };
 
         ee.addListener('removeOne', localcb);
         ee.addListener('removeOne', callback);
@@ -64,7 +64,27 @@ describe('event emitter class', () => {
         
         // the first local should be removed, leaving the other two
         assert.deepEqual(ee.events['removeOne'], [callback, localcb]);
-
     });
+
+    it('calls the handlers on emit, passing in args', () => {
+        let A = '', B = '', C = '', D = '', E = '';
+        const handlerABC = (a, b, c) => {
+            // capture the values of the args I was called with
+            A = a, B = b, C = c;
+        };
+        const handlerDE = (d, e) => {
+            D = d, E = e;
+        };
+
+        ee.addListener('useArgs', handlerABC);
+        ee.addListener('useArgs', handlerDE);
+        ee.emit('useArgs', 'apple', 'banana', 'cantaloupe', 'dates');
+        
+        assert.strictEqual(A, 'apple');
+        assert.strictEqual(B, 'banana');
+        assert.strictEqual(C, 'cantaloupe');
+        assert.strictEqual(D, 'apple');
+        assert.strictEqual(E, 'banana');
+    })
 
 });
