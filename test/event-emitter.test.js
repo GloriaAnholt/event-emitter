@@ -6,17 +6,17 @@ describe('event emitter class', () => {
     // create a global event emitter to use between tests
     let ee = new EventEmitter();
 
-    // define a callback to register with events
-    const callback = () => {};
+    // define a globalHandler to register with events
+    const globalHandler = () => {};
 
     it('creates an empty state object', () => {
         assert.deepEqual(ee.events, {});
     }); 
 
     it('adds a new event type to the hash, registers handler fn', () => {
-        ee.addListener('TEST', callback);
+        ee.addListener('TEST', globalHandler);
         assert.isOk(ee.events['TEST'])
-        assert.deepEqual(ee.events['TEST'], [callback]);
+        assert.deepEqual(ee.events['TEST'], [globalHandler]);
     });
 
     it('returns false if you try to register a non-function', () => {
@@ -40,9 +40,9 @@ describe('event emitter class', () => {
     });
 
     it('removes all listeners for a given event type', () => {
-        ee.addListener('REMOVEME', callback);
-        ee.addListener('REMOVEME', callback);
-        ee.addListener('REMOVEME', callback);
+        ee.addListener('REMOVEME', globalHandler);
+        ee.addListener('REMOVEME', globalHandler);
+        ee.addListener('REMOVEME', globalHandler);
         assert.equal(ee.events['REMOVEME'].length, 3);
         
         let returnedEE = ee.removeAllListeners('REMOVEME');
@@ -55,7 +55,7 @@ describe('event emitter class', () => {
         const localcb = () => { 'different function' };
 
         ee.addListener('removeOne', localcb);
-        ee.addListener('removeOne', callback);
+        ee.addListener('removeOne', globalHandler);
         ee.addListener('removeOne', localcb);
         assert.equal(ee.events['removeOne'].length, 3);
         
@@ -63,7 +63,7 @@ describe('event emitter class', () => {
         assert.equal(ee.events['removeOne'].length, 2);
         
         // the first local should be removed, leaving the other two
-        assert.deepEqual(ee.events['removeOne'], [callback, localcb]);
+        assert.deepEqual(ee.events['removeOne'], [globalHandler, localcb]);
     });
 
     it('calls the handlers on emit, passing in args', () => {
@@ -85,6 +85,25 @@ describe('event emitter class', () => {
         assert.strictEqual(C, 'cantaloupe');
         assert.strictEqual(D, 'apple');
         assert.strictEqual(E, 'banana');
+    });
+
+    it('removes a once handler after it is called', () => {
+        let count = 0;
+        const localHandler = () => { count++ };
+        
+        // uses wrapper closure, cant check for localHandler inclusion
+        ee.addListener('justOnce', globalHandler);
+        ee.once('justOnce', localHandler);  
+        assert.equal(ee.events['justOnce'].length, 2);
+
+        // First emit event
+        ee.emit('justOnce');
+        assert.equal(count, 1);
+        assert.equal(ee.events['justOnce'].length, 1);
+
+        // Second emit event, count doesn't change
+        ee.emit('justOnce');
+        assert.equal(count, 1);
     })
 
 });
