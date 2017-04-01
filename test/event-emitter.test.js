@@ -45,7 +45,6 @@ describe('EventEmitter class: ', () => {
         assert.equal(counterB, 1);
     });
 
-
     it('removes a registered handler when you call the returned remove function', () => {
         let counterKeep = 0, counterRemove = 0;
         const keepHandler = () => { ++counterKeep };
@@ -88,25 +87,35 @@ describe('EventEmitter class: ', () => {
         assert.equal(counterRemove, 1);     // shouldn't increment
     });
 
-    it('removes all listeners for a given event type', () => {
-        let counter1 = 0, counter2 = 0;
+    it('removes all listeners for a given event type, does not affect other events', () => {
+        let counter1 = 0, counter2 = 0, counter3 = 0;
         const handlerA = () => { ++counter1 };
         const handlerB = () => { ++counter2 };
+        const unrelatedHandler = () => { ++counter3 };
         
         ee.addListener('toast', handlerA);
         ee.addListener('toast', handlerB);
+        ee.addListener('notToast', unrelatedHandler);
 
         ee.emit('toast');
         assert.equal(counter1, 1);
         assert.equal(counter2, 1);
+        assert.equal(counter3, 0)
 
         // remove all listeners
         ee.removeAllListeners('toast');
 
+        // toasts and notToast shouldn't increment nor throw any errors
         ee.emit('toast');
-        // neither should increment
         assert.equal(counter1, 1);     
-        assert.equal(counter2, 1);     
+        assert.equal(counter2, 1);
+        assert.equal(counter3, 0)     
+        
+        // remove all shouldn't affect unrelated event names
+        ee.emit('notToast');
+        assert.equal(counter1, 1);     
+        assert.equal(counter2, 1); 
+        assert.equal(counter3, 1);     
     });
 
     it('removes the first correct listener on removeListener', () => {
@@ -129,7 +138,28 @@ describe('EventEmitter class: ', () => {
         // we should expect the duplicated handler to have been called only once this time
         assert.equal(counter, 2);
         assert.equal(duplicateCounter, 3);
+    });
+
+    it('removes the first correct listener using returned unsubscribe function', () => {
+        let counter = 0, duplicateCounter = 0;
+        const handler = () => { ++counter };
+        const handlerDuplicate = () => { ++duplicateCounter };
+
+        ee.addListener('removeOne', handler);
+        let unsubscribe = ee.addListener('removeOne', handlerDuplicate);
+        ee.addListener('removeOne', handlerDuplicate);
+
+        ee.emit('removeOne')
+        // we should expect the duplicated handler function to have been called twice
+        assert.equal(counter, 1);
+        assert.equal(duplicateCounter, 2);
         
+        unsubscribe();
+
+        ee.emit('removeOne')
+        // we should expect the duplicated handler to have been called only once this time
+        assert.equal(counter, 2);
+        assert.equal(duplicateCounter, 3);
     });
 
     it('calls the handlers on emit, passing in variable number of args', () => {
@@ -151,6 +181,24 @@ describe('EventEmitter class: ', () => {
         assert.strictEqual(C, 'cantaloupe');
         assert.strictEqual(D, 'apple');
         assert.strictEqual(E, 'banana');
+    });
+
+    it('calls the handlers on emit, passing in insufficient number of args', () => {
+        let A = '', B = '', C = '', D = '', E = '';
+        const handlerABCD = (a, b, c, d) => {
+            // capture the values of the args I was called with
+            A = a, B = b, C = c, D = d;
+        };
+
+        ee.addListener('useArgs', handlerABCD);
+        // the D empty string should be overwritten with undefined
+        ee.emit('useArgs', 'apple', 'banana', 'cantaloupe');
+        
+        assert.strictEqual(A, 'apple');
+        assert.strictEqual(B, 'banana');
+        assert.strictEqual(C, 'cantaloupe');
+        assert.strictEqual(D, undefined);
+        assert.strictEqual(E, '');
     });
 
     it('removes a once handler after it is called once', () => {
