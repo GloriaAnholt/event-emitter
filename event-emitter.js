@@ -39,8 +39,7 @@ class EventEmitter {
                 })
             }
         } 
-        // error: didn't pass a fn as a handler, add failed
-        else return false;
+        else throw new TypeError('Error: addlistener(eventName, cb) - callbacks must be of type function');
     }
 
     /**
@@ -58,8 +57,7 @@ class EventEmitter {
             }
             this.addListener(eventName, wrapper);
         }
-        // error: didn't pass a fn as a handler, add failed
-        else return false;
+        else throw new TypeError('Error: addlistener(eventName, cb) - callbacks must be of type function');
     }
     
     /**
@@ -75,8 +73,7 @@ class EventEmitter {
                 fn.call(this, ...args);
             })
         }
-        // error: eventName wasn't registered
-        else return false
+        else throw new ReferenceError('Error: eventName not found');
     }
 
     /**
@@ -93,10 +90,10 @@ class EventEmitter {
             if (index > -1) {
                 this._events[eventName].splice(index, 1);
                 return true;
-            }
+            } 
+            else throw new ReferenceError('Error: cb not registered for eventName');
         }
-        // error: couldn't find event or registered handler
-        else return false;
+        else throw new ReferenceError('Error: eventName not found');
     }
 
     /**
@@ -112,8 +109,7 @@ class EventEmitter {
             // Like node, returns a reference to itself to allow for chaining calls
             return EventEmitter;
         }
-        // error: eventName wasn't registered
-        else return false
+        else throw new ReferenceError('Error: eventName not found');
     }
     
 }
