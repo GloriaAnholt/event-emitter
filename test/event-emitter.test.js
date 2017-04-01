@@ -1,72 +1,120 @@
 const assert = require('chai').assert;
 const EventEmitter = require('../event-emitter');
 
-describe('event emitter class', () => {
+describe('EventEmitter class: ', () => {
 
     // create a global event emitter to use between tests
     let ee = new EventEmitter();
 
-    // define a globalHandler to register with events
+    // create a globalHandler to use between test 
     const globalHandler = () => {};
 
-    it('creates an empty state object', () => {
-        assert.deepEqual(ee.events, {});
+    it('creates and returns an EventEmitter object', () => {
+        assert.isObject(ee);
     }); 
 
-    it('adds a new event type to the hash, registers handler fn', () => {
-        ee.addListener('TEST', globalHandler);
-        assert.isOk(ee.events['TEST'])
-        assert.deepEqual(ee.events['TEST'], [globalHandler]);
+    it('returns the unsubscribe function when you add a listener', () => {
+        let removeMe = ee.addListener('RemoveMe', globalHandler);
+        assert.isFunction(removeMe);
     });
 
-    it('returns false if you try to register a non-function', () => {
-        let response = ee.addListener('FAIL', 'string');
-        assert.isOk(ee.events['FAIL'])
-        assert.isFalse(response);
+    it('calls the registered handler for an eventName', () => {
+        let counter = 0;
+        const handler = () => { ++counter };
+        ee.addListener('increment', handler);
+        ee.emit('increment');
+        assert.equal(counter, 1);
+        ee.emit('increment');
+        assert.equal(counter, 2);
     });
 
-    it('returns the function to unsubscribe', () => {
-        const othercb = () => {};
-        // make sure there's only one cb in the TEST event array
-        assert.equal(ee.events['TEST'].length, 1);
-        // add a new listener and capture it's unsubscribe function
-        const removeMe = ee.addListener('TEST', othercb);
-        // make sure the cb is in the array 
-        assert.equal(ee.events['TEST'].length, 2);
-        removeMe();
-        // make sure this cb isn't in there anymore
-        assert.equal(ee.events['TEST'].length, 1);
-        assert.notInclude(ee.events['TEST'], othercb);
+    it('removes a registered handler when you call the returned remove function', () => {
+        let counterKeep = 0, counterRemove = 0;
+        const keepHandler = () => { ++counterKeep };
+        const removeHandler = () => { ++counterRemove };
+        
+        ee.addListener('bacon', keepHandler);
+        // capture the unsubscribe function to use later
+        let unsubscribe = ee.addListener('bacon', removeHandler);
+        assert.isFunction(unsubscribe);
+
+        ee.emit('bacon');
+        assert.equal(counterKeep, 1);
+        assert.equal(counterRemove, 1);
+
+        // remove one listener, not the other
+        unsubscribe();
+
+        ee.emit('bacon');
+        assert.equal(counterKeep, 2);       // should increment
+        assert.equal(counterRemove, 1);     // shouldn't increment
     });
 
+    it('removes a registered handler using the removeListener method', () => {
+        let counterKeep = 0, counterRemove = 0;
+        const keepHandler = () => { ++counterKeep };
+        const removeHandler = () => { ++counterRemove };
+        
+        ee.addListener('eggs', keepHandler);
+        ee.addListener('eggs', removeHandler);
+
+        ee.emit('eggs');
+        assert.equal(counterKeep, 1);
+        assert.equal(counterRemove, 1);
+
+        // remove one listener, not the other
+        ee.removeListener('eggs', removeHandler);
+
+        ee.emit('eggs');
+        assert.equal(counterKeep, 2);       // should increment
+        assert.equal(counterRemove, 1);     // shouldn't increment
+    });
+    
     it('removes all listeners for a given event type', () => {
-        ee.addListener('REMOVEME', globalHandler);
-        ee.addListener('REMOVEME', globalHandler);
-        ee.addListener('REMOVEME', globalHandler);
-        assert.equal(ee.events['REMOVEME'].length, 3);
+        let counter1 = 0, counter2 = 0;
+        const handlerA = () => { ++counter1 };
+        const handlerB = () => { ++counter2 };
         
-        let returnedEE = ee.removeAllListeners('REMOVEME');
-        assert.equal(ee.events['REMOVEME'].length, 0);
-        // removeAll returns a ref to the EE class itself
-        assert.deepEqual(EventEmitter, returnedEE);
+        ee.addListener('toast', handlerA);
+        ee.addListener('toast', handlerB);
+
+        ee.emit('toast');
+        assert.equal(counter1, 1);
+        assert.equal(counter2, 1);
+
+        // remove all listeners
+        ee.removeAllListeners('toast');
+
+        ee.emit('toast');
+        // neither should increment
+        assert.equal(counter1, 1);     
+        assert.equal(counter2, 1);     
     });
 
-    it('removes the first correct listener on remove', () => {
-        const localcb = () => { 'different function' };
+    it('removes the first correct listener on removeListener', () => {
+        let counter = 0, duplicateCounter = 0;
+        const handler = () => { ++counter };
+        const handlerDuplicate = () => { ++duplicateCounter };
 
-        ee.addListener('removeOne', localcb);
-        ee.addListener('removeOne', globalHandler);
-        ee.addListener('removeOne', localcb);
-        assert.equal(ee.events['removeOne'].length, 3);
+        ee.addListener('removeOne', handler);
+        ee.addListener('removeOne', handlerDuplicate);
+        ee.addListener('removeOne', handlerDuplicate);
+
+        ee.emit('removeOne')
+        // we should expect the duplicated handler function to have been called twice
+        assert.equal(counter, 1);
+        assert.equal(duplicateCounter, 2);
         
-        ee.removeListener('removeOne', localcb);
-        assert.equal(ee.events['removeOne'].length, 2);
+        ee.removeListener('removeOne', handlerDuplicate);
+
+        ee.emit('removeOne')
+        // we should expect the duplicated handler to have been called only once this time
+        assert.equal(counter, 2);
+        assert.equal(duplicateCounter, 3);
         
-        // the first local should be removed, leaving the other two
-        assert.deepEqual(ee.events['removeOne'], [globalHandler, localcb]);
     });
 
-    it('calls the handlers on emit, passing in args', () => {
+    it('calls the handlers on emit, passing in variable number of args', () => {
         let A = '', B = '', C = '', D = '', E = '';
         const handlerABC = (a, b, c) => {
             // capture the values of the args I was called with
@@ -87,23 +135,23 @@ describe('event emitter class', () => {
         assert.strictEqual(E, 'banana');
     });
 
-    it('removes a once handler after it is called', () => {
-        let count = 0;
-        const localHandler = () => { count++ };
+    it('removes a once handler after it is called once', () => {
+        let countOnce = 0, counter = 0;
+        const onceHandler = () => { ++countOnce };
+        const manyHandler = () => { ++counter };
         
-        // uses wrapper closure, cant check for localHandler inclusion
-        ee.addListener('justOnce', globalHandler);
-        ee.once('justOnce', localHandler);  
-        assert.equal(ee.events['justOnce'].length, 2);
+        ee.addListener('justOnce', manyHandler);
+        ee.once('justOnce', onceHandler);  
 
-        // First emit event
         ee.emit('justOnce');
-        assert.equal(count, 1);
-        assert.equal(ee.events['justOnce'].length, 1);
+        assert.equal(countOnce, 1);
+        assert.equal(counter, 1);
 
-        // Second emit event, count doesn't change
+        // Second emit event, onceHandler should be unsubscribed so 
+        // countOnce shouldn't change
         ee.emit('justOnce');
-        assert.equal(count, 1);
-    })
+        assert.equal(countOnce, 1);
+        assert.equal(counter, 2)
+    });
 
 });
