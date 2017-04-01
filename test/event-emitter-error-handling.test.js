@@ -35,6 +35,7 @@ describe('EventEmitter class error handling: ', () => {
             'Error: eventName not found'
         );
     });
+    // TODO document why this behavior exists (typos!)
 
     it('throws a ReferenceError if you try to remove an unregistered method', () => {
         const registeredHandler = () => {};
@@ -62,6 +63,30 @@ describe('EventEmitter class error handling: ', () => {
             fails, 
             ReferenceError, 
             'Error: eventName not found'
+        );
+    });
+
+    it('throws an error if you remove a handler and then call the returned unsubscribe function', () => {
+        let counter = 0;
+        const handler = () => { ++counter };
+        
+        // capture the unsubscribe function to use later
+        let unsubscribe = ee.addListener('doubleRemove', handler);
+
+        ee.emit('doubleRemove');
+        assert.equal(counter, 1);
+
+        ee.removeListener('doubleRemove', handler);
+
+        ee.emit('doubleRemove');
+        assert.equal(counter, 1);     // shouldn't increment because it's removed
+
+        const fails = () => { unsubscribe() };
+
+        assert.throws(
+            fails, 
+            ReferenceError, 
+            'Error: cb not registered for eventName'
         );
     });
 
