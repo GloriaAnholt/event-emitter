@@ -28,6 +28,24 @@ describe('EventEmitter class: ', () => {
         assert.equal(counter, 2);
     });
 
+    it('does not emit events for different types', () => {
+        let counterA = 0, counterB = 0;
+        const handlerA = () => { ++counterA };
+        const handlerB = () => { ++counterB };
+
+        ee.addListener('typeA', handlerA);
+        ee.addListener('typeB', handlerB);
+
+        ee.emit('typeA');
+        assert.equal(counterA, 1);
+        assert.equal(counterB, 0);
+
+        ee.emit('typeB');
+        assert.equal(counterA, 1);
+        assert.equal(counterB, 1);
+    });
+
+
     it('removes a registered handler when you call the returned remove function', () => {
         let counterKeep = 0, counterRemove = 0;
         const keepHandler = () => { ++counterKeep };
@@ -69,7 +87,7 @@ describe('EventEmitter class: ', () => {
         assert.equal(counterKeep, 2);       // should increment
         assert.equal(counterRemove, 1);     // shouldn't increment
     });
-    
+
     it('removes all listeners for a given event type', () => {
         let counter1 = 0, counter2 = 0;
         const handlerA = () => { ++counter1 };
