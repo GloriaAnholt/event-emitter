@@ -34,9 +34,7 @@ class EventEmitter {
             this._events[eventName].push(cb);
             // return them their unsubscribe function
             return () => { 
-                this._events[eventName] = this._events[eventName].filter(fn => {
-                if (fn !== cb) return fn
-                })
+                this.removeListener(eventName, cb);
             }
         } 
         else throw new TypeError('Error: addlistener(eventName, cb) - callbacks must be of type function');
@@ -63,6 +61,7 @@ class EventEmitter {
     /**
      * When an event is emitted matching a registered event type, invokes each listener's callback
      * function, passing along whatever arguments the emit method recieved. 
+     * TODO - document any guarantees on order that listeners are called in
      * @method
      * @param {string} eventName - A string token for event type, by name 
      * @param {*} args - Takes any number of any type of arguments and passes them to the callback functions
@@ -97,7 +96,7 @@ class EventEmitter {
     }
 
     /**
-     * Removes all matching listener for the event based on the string token eventName. Returns the 
+     * Removes all matching listeners for the event based on the string token eventName. Returns the 
      * EventEmitter if a matching event name is found, false if no events are registered by the event 
      * name. Note: does not remove the event type key from the dict, simply clears all listeners.
      * @method
