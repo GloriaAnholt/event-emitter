@@ -31,10 +31,15 @@
         <h2>EventEmitter</h2>
         
             <div class="class-description">A simple factory which returns a Pub/Sub style Event Emitter in ES6. 
-Subscription is managed via an addListener (reusable) or once method to add a new listener to a 
-given event name, and removed via either the returned unsubscribe method (from addListener), or 
-using the removeListener (removes first match to callback) or removeAllListeners for a given event.
-Events are emitted using the emit method.</div>
+Subscription is managed via the addListener (reusable events) or the once methods to add a new listener 
+to a given event name. Individual handlers are removed via the returned unsubscribe function, or by 
+using the removeListener method (both remove the first matching handler function for that event type). 
+Handlers registered by the "once" method can only be removed using their returned unsubscribe function. 
+The removeAllListeners method clears all registered listeners for the given event name, but does not 
+remove the event name from the registered events. 
+Events are emitted using the emit method, and the handlers are called in the order they were registered 
+for a given event name, minus any listeners that were removed before an emit event occurred. 
+Emitting an event for an emptied event name does not throw an error.</div>
         
     
 </header>
@@ -152,7 +157,7 @@ Events are emitted using the emit method.</div>
 
 <div class="description">
     Adds a new listener for the event based on the string token eventName, or creates the event 
-type if not in dict of events. Returns false if not passed a callback function.
+type if not in dict of events. Throws a TypeError if not passed a callback function.
 </div>
 
 
@@ -268,7 +273,7 @@ type if not in dict of events. Returns false if not passed a callback function.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line29">line 29</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line34">line 34</a>
     </li></ul></dd>
     
 
@@ -306,8 +311,10 @@ type if not in dict of events. Returns false if not passed a callback function.
 
 
 <div class="description">
-    When an event is emitted matching a registered event type, invokes each listener's callback
-function, passing along whatever arguments the emit method recieved.
+    When an event is emitted matching a registered event type, invokes each listener's callback function
+in the order they were registered, passing along whatever arguments the emit method recieved. 
+Throws a ReferenceError if the event name has never been registered - passes silently if no handlers 
+are currently registered for a given event name.
 </div>
 
 
@@ -443,7 +450,7 @@ function, passing along whatever arguments the emit method recieved.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line72">line 72</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -481,8 +488,9 @@ function, passing along whatever arguments the emit method recieved.
 
 
 <div class="description">
-    Adds a one-time use listener for the eventName, removed from listeners after first matching event
-id emitted
+    Adds a one-time-use listener for the eventName, removed from listeners after first matching event
+is emitted. Cannot be removed by removeListener - must use the returned unsubscribe function.
+Throws a TypeError if not passed a function as a handler.
 </div>
 
 
@@ -598,7 +606,7 @@ id emitted
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line53">line 53</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -636,9 +644,10 @@ id emitted
 
 
 <div class="description">
-    Removes all matching listener for the event based on the string token eventName. Returns the 
-EventEmitter if a matching event name is found, false if no events are registered by the event 
-name. Note: does not remove the event type key from the dict, simply clears all listeners.
+    Removes all matching listeners for the event based on the string token eventName. Returns the 
+EventEmitter if a matching event name is found, throws a ReferenceError if no events are 
+registered by the event name. 
+Note: does not remove the event type key from the dict, simply clears all listeners.
 </div>
 
 
@@ -731,7 +740,7 @@ name. Note: does not remove the event type key from the dict, simply clears all 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line109">line 109</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -770,8 +779,8 @@ name. Note: does not remove the event type key from the dict, simply clears all 
 
 <div class="description">
     Removes the first matching listener for the event based on the string token eventName.
-Returns true if a matching callback is found, false if no events are registered by the 
-event name or no matching listeners are found.
+Returns true if a matching callback is found, throws a ReferenceError if no events are 
+registered by the event name or no matching listeners are found.
 </div>
 
 
@@ -887,7 +896,7 @@ event name or no matching listeners are found.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line90">line 90</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line93">line 93</a>
     </li></ul></dd>
     
 
@@ -992,7 +1001,7 @@ event name or no matching listeners are found.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line18">line 18</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line23">line 23</a>
     </li></ul></dd>
     
 
@@ -1049,7 +1058,7 @@ event name or no matching listeners are found.
 
 <div class="description">
     Adds a new listener for the event based on the string token eventName, or creates the event 
-type if not in dict of events. Returns false if not passed a callback function.
+type if not in dict of events. Throws a TypeError if not passed a callback function.
 </div>
 
 
@@ -1165,7 +1174,7 @@ type if not in dict of events. Returns false if not passed a callback function.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line29">line 29</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line34">line 34</a>
     </li></ul></dd>
     
 
@@ -1203,8 +1212,10 @@ type if not in dict of events. Returns false if not passed a callback function.
 
 
 <div class="description">
-    When an event is emitted matching a registered event type, invokes each listener's callback
-function, passing along whatever arguments the emit method recieved.
+    When an event is emitted matching a registered event type, invokes each listener's callback function
+in the order they were registered, passing along whatever arguments the emit method recieved. 
+Throws a ReferenceError if the event name has never been registered - passes silently if no handlers 
+are currently registered for a given event name.
 </div>
 
 
@@ -1340,7 +1351,7 @@ function, passing along whatever arguments the emit method recieved.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line72">line 72</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -1378,8 +1389,9 @@ function, passing along whatever arguments the emit method recieved.
 
 
 <div class="description">
-    Adds a one-time use listener for the eventName, removed from listeners after first matching event
-id emitted
+    Adds a one-time-use listener for the eventName, removed from listeners after first matching event
+is emitted. Cannot be removed by removeListener - must use the returned unsubscribe function.
+Throws a TypeError if not passed a function as a handler.
 </div>
 
 
@@ -1495,7 +1507,7 @@ id emitted
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line53">line 53</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -1533,9 +1545,10 @@ id emitted
 
 
 <div class="description">
-    Removes all matching listener for the event based on the string token eventName. Returns the 
-EventEmitter if a matching event name is found, false if no events are registered by the event 
-name. Note: does not remove the event type key from the dict, simply clears all listeners.
+    Removes all matching listeners for the event based on the string token eventName. Returns the 
+EventEmitter if a matching event name is found, throws a ReferenceError if no events are 
+registered by the event name. 
+Note: does not remove the event type key from the dict, simply clears all listeners.
 </div>
 
 
@@ -1628,7 +1641,7 @@ name. Note: does not remove the event type key from the dict, simply clears all 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line109">line 109</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -1667,8 +1680,8 @@ name. Note: does not remove the event type key from the dict, simply clears all 
 
 <div class="description">
     Removes the first matching listener for the event based on the string token eventName.
-Returns true if a matching callback is found, false if no events are registered by the 
-event name or no matching listeners are found.
+Returns true if a matching callback is found, throws a ReferenceError if no events are 
+registered by the event name or no matching listeners are found.
 </div>
 
 
@@ -1784,7 +1797,7 @@ event name or no matching listeners are found.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line90">line 90</a>
+        <a href="event-emitter.js.html">event-emitter.js</a>, <a href="event-emitter.js.html#line93">line 93</a>
     </li></ul></dd>
     
 
@@ -1832,7 +1845,7 @@ event name or no matching listeners are found.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sat Apr 01 2017 12:43:17 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sat Apr 01 2017 16:47:22 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>
