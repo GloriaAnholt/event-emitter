@@ -1,21 +1,18 @@
-# Global
-
-
-
-
+# Class: EventEmitter
+A simple factory which returns a Pub/Sub style Event Emitter in ES6. 
+Subscription is managed via the addListener (reusable events) or the once methods to add a new listener 
+to a given event name. Individual handlers are removed via the returned unsubscribe function, or by 
+using the removeListener method (both remove the first matching handler function for that event type). 
+Handlers registered by the "once" method can only be removed using their returned unsubscribe function. 
+The removeAllListeners method clears all registered listeners for the given event name, but does not 
+remove the event name from the registered events. 
+Events are emitted using the emit method, and the handlers are called in the order they were registered 
+for a given event name, minus any listeners that were removed before an emit event occurred. 
+Emitting an event for an emptied event name does not throw an error.
 
 * * *
 
-## Class: EventEmitter
-
-
-
-## Class: EventEmitter
-
-
-
-## Class: EventEmitter
-
+## EventEmitter API
 
 ### EventEmitter.addListener(eventName, cb) 
 
